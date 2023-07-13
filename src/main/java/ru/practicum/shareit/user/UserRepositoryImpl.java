@@ -8,6 +8,7 @@ import java.util.*;
 public class UserRepositoryImpl implements UserRepository {
     private final Map<Integer, User> users = new HashMap<>();
     private Integer idCounter = 0;
+
     @Override
     public List<User> findAll() {
         return new ArrayList<>(users.values());

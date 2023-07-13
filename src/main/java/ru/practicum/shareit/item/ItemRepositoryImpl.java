@@ -34,7 +34,7 @@ public class ItemRepositoryImpl implements ItemRepository {
             listToUpdate.add(item);
             items.put(item.getOwner().getId(), listToUpdate);
         } else {
-            List <Item> list = new ArrayList<>();
+            List<Item> list = new ArrayList<>();
             list.add(item);
             items.put(item.getOwner().getId(), list);
         }
@@ -68,16 +68,17 @@ public class ItemRepositoryImpl implements ItemRepository {
     public List<Item> searchItems(String text) {
         List<Item> foundItems = new ArrayList<>();
         String textToFindLowerCase = text.toLowerCase();
-        items.forEach((key, value) -> value.forEach(item -> {String itemNameLowerCase = item.getName().toLowerCase();
-                                                             String itemDescriptionLowerCase = item.getDescription().toLowerCase();
-                                  if (itemNameLowerCase.contains(textToFindLowerCase)
-                                          || itemDescriptionLowerCase.contains(textToFindLowerCase)
-                                          && item.getAvailable())
-                                  {
-                                      foundItems.add(item);
-                                  }}));
+        items.forEach((key, value) -> value.forEach(item -> {
+            String itemNameLowerCase = item.getName().toLowerCase();
+            String itemDescriptionLowerCase = item.getDescription().toLowerCase();
+            if (itemNameLowerCase.contains(textToFindLowerCase)
+                    || itemDescriptionLowerCase.contains(textToFindLowerCase)
+                    && item.getAvailable()) {
+                foundItems.add(item);
+            }
+        }));
 
-    return foundItems;
+        return foundItems;
     }
 
     @Override
