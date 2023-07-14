@@ -51,25 +51,21 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public boolean isEmailAlreadyInUse(String email) {
-        if (users.values() != null) {
             for (User user : users.values()) {
                 if (user.getEmail().equals(email)) {
                     return true;
                 }
             }
-        }
         return false;
     }
 
     @Override
     public boolean isEmailAlreadyInUseForUpdate(String email, Integer id) {
-        if (users.values() != null) {
             for (User user : users.values()) {
                 if (user.getEmail().equals(email) && !Objects.equals(user.getId(), id)) {
                     return true;
                 }
             }
-        }
         return false;
     }
 

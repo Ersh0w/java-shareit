@@ -83,7 +83,6 @@ public class ItemRepositoryImpl implements ItemRepository {
 
     @Override
     public boolean isItemPresentById(Integer id) {
-        if (items.values() != null) {
             for (List<Item> list : items.values()) {
                 for (Item item : list) {
                     if (Objects.equals(item.getId(), id)) {
@@ -91,7 +90,6 @@ public class ItemRepositoryImpl implements ItemRepository {
                     }
                 }
             }
-        }
         return false;
     }
 
