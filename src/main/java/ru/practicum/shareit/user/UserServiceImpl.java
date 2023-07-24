@@ -3,13 +3,14 @@ package ru.practicum.shareit.user;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.EmailAlreadyInUseException;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.UserNotFoundException;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 @Slf4j
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
@@ -20,58 +21,42 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUserById(Integer id) {
-        if (!isUserPresentById(id)) {
-            throw new UserNotFoundException("Пользователь не найден");
-        }
-        return userRepository.getUserById(id);
+    public User getUserById(long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
     }
 
     @Override
+    @Transactional
     public User saveUser(User user) {
-        if (isEmailAlreadyInUse(user.getEmail())) {
-            throw new EmailAlreadyInUseException("Данный email уже используется");
-        }
         User createdUser = userRepository.save(user);
         log.info("Добавлен пользователь: {}", createdUser.toString());
         return createdUser;
     }
 
     @Override
-    public User updateUser(User user, Integer id) {
-        User userToReturn;
-        if (isUserPresentById(id)) {
-            if (isEmailAlreadyInUseForUpdate(user.getEmail(), id)) {
-                throw new EmailAlreadyInUseException("Данный email уже используется");
-            }
-            userToReturn = userRepository.updateUser(user, id);
-            log.info("Обновлен пользователь: {}", user.toString());
-        } else {
-            log.info("Ошибка обновления пользователя: Пользователь {} не найден", user.toString());
-            throw new UserNotFoundException("Пользователь не найден");
+    @Transactional
+    public User updateUser(User user, long id) {
+        User userToUpdate = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
+
+        if (user.getEmail() != null) {
+            userToUpdate.setEmail(user.getEmail());
+        }
+        if (user.getName() != null) {
+            userToUpdate.setName(user.getName());
         }
 
-        return userToReturn;
+        return userRepository.save(userToUpdate);
     }
 
     @Override
-    public void deleteUser(Integer id) {
-        if (!isUserPresentById(id)) {
+    @Transactional
+    public void deleteUser(long id) {
+        if (!userRepository.existsById(id)) {
             throw new UserNotFoundException("Пользователь не найден");
         }
-        userRepository.deleteUser(id);
+        userRepository.deleteById(id);
         log.info("Удален пользователь с id: " + id);
-    }
-
-    private boolean isUserPresentById(Integer id) {
-        return userRepository.isUserPresentById(id);
-    }
-
-    private boolean isEmailAlreadyInUse(String email) {
-        return userRepository.isEmailAlreadyInUse(email);
-    }
-
-    private boolean isEmailAlreadyInUseForUpdate(String email, Integer id) {
-        return userRepository.isEmailAlreadyInUseForUpdate(email, id);
     }
 }

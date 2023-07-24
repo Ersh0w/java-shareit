@@ -2,69 +2,84 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.ItemNotBelongToUserException;
-import ru.practicum.shareit.exception.ItemNotFoundException;
-import ru.practicum.shareit.exception.UserNotFoundException;
+import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingMapper;
+import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.exception.*;
+import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 @Slf4j
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
 
     @Override
-    public ItemDto getItemById(Integer itemId) {
-        if (!itemRepository.isItemPresentById(itemId)) {
-            throw new ItemNotFoundException("Вещь не найдена");
+    public ItemDto getItemById(long itemId, long userId) {
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ItemNotFoundException("Вещь не найдена"));
+        List<ItemDto> itemDto = List.of(ItemMapper.toItemDto(item));
+
+        if (item.getOwner().getId() == userId) {
+            itemDto = finaAndAttachNearestBookingsToItemsDto(itemDto, List.of(item.getId()));
         }
 
-        return ItemMapper.toItemDto(itemRepository.getItemById(itemId));
+        return findAndAttachCommentsToItemsDto(itemDto, List.of(item.getId())).get(0);
     }
 
     @Override
-    public List<ItemDto> getAllItemsOfUser(Integer userId) {
-        if (!userRepository.isUserPresentById(userId)) {
-            throw new UserNotFoundException("Пользователь не найден");
-        }
-        List<ItemDto> itemsDto = new ArrayList<>();
-        for (Item item : itemRepository.getAllItemsOfUser(userId)) {
-            itemsDto.add(ItemMapper.toItemDto(item));
-        }
+    public List<ItemDto> getAllItemsOfUser(long userId) {
+        List<Item> items = itemRepository.findAllByOwnerId(userId);
+        List<Long> itemsIds = items.stream()
+                .map(Item::getId)
+                .collect(Collectors.toList());
+        List<ItemDto> itemsDto = finaAndAttachNearestBookingsToItemsDto(ItemMapper.toItemDtoList(items), itemsIds);
 
-        return itemsDto;
+        return findAndAttachCommentsToItemsDto(itemsDto, itemsIds);
     }
 
     @Override
-    public ItemDto saveNewItem(ItemDto itemDto, Integer userId) {
-        if (!userRepository.isUserPresentById(userId)) {
-            throw new UserNotFoundException("Пользователь не найден");
-        }
+    @Transactional
+    public ItemDto saveNewItem(ItemDto itemDto, long userId) {
         Item itemToSave = ItemMapper.toItem(itemDto);
-        itemToSave.setOwner(userRepository.getUserById(userId));
-        Item savedItem = itemRepository.saveNewItem(itemToSave);
+        itemToSave.setOwner(userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Пользователь не найден")));
+        Item savedItem = itemRepository.save(itemToSave);
         log.info("Добавлена вещь: {}", savedItem.toString());
         return ItemMapper.toItemDto(savedItem);
     }
 
     @Override
-    public ItemDto updateItem(ItemDto itemDto, Integer itemId, Integer userId) {
-        if (!userRepository.isUserPresentById(userId)) {
-            throw new UserNotFoundException("Пользователь не найден");
+    @Transactional
+    public ItemDto updateItem(ItemDto itemDto, long itemId, long userId) {
+        Item itemToUpdate = itemRepository.findByIdAndOwnerId(itemId, userId)
+                .orElseThrow(() -> new ItemNotBelongToUserException("Вещь для обновления не найдена у пользователя"));
+
+        if (itemDto.getName() != null) {
+            itemToUpdate.setName(itemDto.getName());
         }
-        if (!itemRepository.isItemBelongsToUser(itemId, userId)) {
-            throw new ItemNotBelongToUserException("Вещь для обновления не найдена у пользователя");
+        if (itemDto.getDescription() != null) {
+            itemToUpdate.setDescription(itemDto.getDescription());
         }
-        Item itemToUpdate = ItemMapper.toItem(itemDto);
-        itemToUpdate.setOwner(userRepository.getUserById(userId));
-        itemToUpdate.setId(itemId);
-        Item updatedItem = itemRepository.updateItem(itemToUpdate);
+        if (itemDto.getAvailable() != null) {
+            itemToUpdate.setAvailable(itemDto.getAvailable());
+        }
+
+        Item updatedItem = itemRepository.save(itemToUpdate);
         log.info("Обновлена вещь: {}", updatedItem.toString());
+
         return ItemMapper.toItemDto(updatedItem);
     }
 
@@ -73,10 +88,73 @@ public class ItemServiceImpl implements ItemService {
         List<ItemDto> itemsDtoToReturn = new ArrayList<>();
         if (!text.isEmpty()) {
             List<Item> itemsToReturn = itemRepository.searchItems(text);
-            for (Item item : itemsToReturn) {
-                itemsDtoToReturn.add(ItemMapper.toItemDto(item));
+            itemsDtoToReturn = ItemMapper.toItemDtoList(itemsToReturn);
+        }
+
+        return itemsDtoToReturn;
+    }
+
+    @Override
+    @Transactional
+    public CommentDto saveNewComment(long itemId, Comment comment, long userId) {
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ItemNotFoundException("Вещь не найдена"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
+
+        List<Booking> booking = bookingRepository.findEarliestBookingByItemIdAndBookerId(itemId, userId, PageRequest.of(0, 1));
+        if (booking.isEmpty()) {
+            throw new CommentWithoutBookingException("Нельзя оставлять отзыв без завершенного бронирования");
+        }
+        if (booking.get(0).getEnd().isAfter(LocalDateTime.now())) {
+            throw new CommentBeforeBookingEndException("Нельзя оставлять отзыв до истечения бронирования");
+        }
+
+        comment.setItem(item);
+        comment.setAuthor(user);
+        comment.setCreated(LocalDateTime.now());
+
+        return CommentMapper.toCommentDto(commentRepository.save(comment));
+    }
+
+    private List<ItemDto> findAndAttachCommentsToItemsDto(List<ItemDto> items, List<Long> itemsIds) {
+        List<Comment> comments = commentRepository.findAllByItemsIds(itemsIds);
+        items.forEach(i -> i.setComments(new ArrayList<>()));
+        if (!comments.isEmpty()) {
+            Map<Long, List<Comment>> commentsByItemId = comments.stream()
+                    .collect(Collectors.groupingBy(comment -> comment.getItem().getId()));
+            items.forEach(item -> {
+                List<Comment> commentsForItem = commentsByItemId.getOrDefault(item.getId(), new ArrayList<>());
+                item.setComments(CommentMapper.toCommentDtoList(commentsForItem));
+            });
+            return items;
+        } else {
+            return items;
+        }
+    }
+
+    private List<ItemDto> finaAndAttachNearestBookingsToItemsDto(List<ItemDto> itemsDto, List<Long> itemsIds) {
+        List<Booking> bookings = bookingRepository.findItemsNearestBookings(itemsIds);
+
+        Map<Long, Optional<Booking>> nearestPastBookings = bookings.stream()
+                .filter(b -> b.getStart().isBefore(LocalDateTime.now()))
+                .collect(Collectors.groupingBy(b -> b.getItem().getId()
+                        , Collectors.maxBy(Comparator.comparing(Booking::getStart))));
+
+        Map<Long, Optional<Booking>> nearestFutureBookings = bookings.stream()
+                .filter(b -> b.getStart().isAfter(LocalDateTime.now()))
+                .collect(Collectors.groupingBy(b -> b.getItem().getId()
+                        , Collectors.minBy(Comparator.comparing(Booking::getStart))));
+
+        for (ItemDto item : itemsDto) {
+            if (nearestPastBookings.get(item.getId()) != null) {
+                item.setLastBooking(BookingMapper.toBookingItemDto(nearestPastBookings.get(item.getId())));
+            }
+            if (nearestFutureBookings.get(item.getId()) != null) {
+                item.setNextBooking(BookingMapper.toBookingItemDto(nearestFutureBookings.get(item.getId())));
             }
         }
-        return itemsDtoToReturn;
+
+        return itemsDto;
     }
 }
