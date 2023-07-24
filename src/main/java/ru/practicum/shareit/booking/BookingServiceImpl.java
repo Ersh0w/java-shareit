@@ -64,7 +64,8 @@ public class BookingServiceImpl implements BookingService {
             case "REJECTED":
                 bookings = bookingRepository.findWaitingOrRejectedBookingsOfUser(userId, BookingStatus.REJECTED);
                 break;
-            default: throw new NoSuchStateForBookingSearchException("Unknown state: UNSUPPORTED_STATUS");
+            default:
+                throw new NoSuchStateForBookingSearchException("Unknown state: UNSUPPORTED_STATUS");
         }
         return BookingMapper.toSavedBookingDtoList(bookings);
     }
@@ -97,7 +98,8 @@ public class BookingServiceImpl implements BookingService {
             case "REJECTED":
                 bookings = bookingRepository.findWaitingOrBookingsOfItemsOwner(itemsIds, BookingStatus.REJECTED);
                 break;
-            default: throw new NoSuchStateForBookingSearchException("Unknown state: UNSUPPORTED_STATUS");
+            default:
+                throw new NoSuchStateForBookingSearchException("Unknown state: UNSUPPORTED_STATUS");
         }
         return BookingMapper.toSavedBookingDtoList(bookings);
     }

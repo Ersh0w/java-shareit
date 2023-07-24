@@ -138,13 +138,13 @@ public class ItemServiceImpl implements ItemService {
 
         Map<Long, Optional<Booking>> nearestPastBookings = bookings.stream()
                 .filter(b -> b.getStart().isBefore(LocalDateTime.now()))
-                .collect(Collectors.groupingBy(b -> b.getItem().getId()
-                        , Collectors.maxBy(Comparator.comparing(Booking::getStart))));
+                .collect(Collectors.groupingBy(b -> b.getItem().getId(),
+                        Collectors.maxBy(Comparator.comparing(Booking::getStart))));
 
         Map<Long, Optional<Booking>> nearestFutureBookings = bookings.stream()
                 .filter(b -> b.getStart().isAfter(LocalDateTime.now()))
-                .collect(Collectors.groupingBy(b -> b.getItem().getId()
-                        , Collectors.minBy(Comparator.comparing(Booking::getStart))));
+                .collect(Collectors.groupingBy(b -> b.getItem().getId(),
+                        Collectors.minBy(Comparator.comparing(Booking::getStart))));
 
         for (ItemDto item : itemsDto) {
             if (nearestPastBookings.get(item.getId()) != null) {

@@ -50,8 +50,8 @@ public class ItemController {
 
     @PostMapping("/{itemId}/comment")
     public CommentDto saveNewComment(@PathVariable long itemId,
-                                  @RequestBody @Valid Comment comment,
-                               @RequestHeader("X-Sharer-User-Id") long userId) {
+                                     @RequestBody @Valid Comment comment,
+                                     @RequestHeader("X-Sharer-User-Id") long userId) {
         log.info("получен запрос на добавление комментария к вещи с id " + itemId + " от пользователя с id " + userId);
         return itemService.saveNewComment(itemId, comment, userId);
     }

@@ -15,7 +15,7 @@ public class BookingMapper {
                 .build();
     }
 
-    public static SavedBookingDto toSavedBookingDto (Booking booking) {
+    public static SavedBookingDto toSavedBookingDto(Booking booking) {
         return SavedBookingDto.builder()
                 .start(booking.getStart())
                 .end(booking.getEnd())
@@ -24,7 +24,7 @@ public class BookingMapper {
                 .build();
     }
 
-    public static List<SavedBookingDto> toSavedBookingDtoList (List<Booking> bookings) {
+    public static List<SavedBookingDto> toSavedBookingDtoList(List<Booking> bookings) {
         List<SavedBookingDto> savedBookingsDto = new ArrayList<>();
         for (Booking booking : bookings) {
             SavedBookingDto savedBooking = toSavedBookingDto(booking);
