@@ -35,12 +35,10 @@ public class BookingMapper {
         return savedBookingsDto;
     }
 
-    public static BookingItemDto toBookingItemDto(Optional<Booking> booking) {
+    public static BookingItemDto toBookingItemDto(Booking booking) {
         BookingItemDto bookingItemDto = new BookingItemDto();
-        if (booking.isPresent()) {
-            bookingItemDto.setId(booking.get().getId());
-            bookingItemDto.setBookerId(booking.get().getBooker().getId());
-        }
+        bookingItemDto.setId(booking.getId());
+        bookingItemDto.setBookerId(booking.getBooker().getId());
 
         return bookingItemDto;
     }

@@ -148,10 +148,10 @@ public class ItemServiceImpl implements ItemService {
 
         for (ItemDto item : itemsDto) {
             if (nearestPastBookings.get(item.getId()) != null) {
-                item.setLastBooking(BookingMapper.toBookingItemDto(nearestPastBookings.get(item.getId())));
+                item.setLastBooking(BookingMapper.toBookingItemDto(nearestPastBookings.get(item.getId()).get()));
             }
             if (nearestFutureBookings.get(item.getId()) != null) {
-                item.setNextBooking(BookingMapper.toBookingItemDto(nearestFutureBookings.get(item.getId())));
+                item.setNextBooking(BookingMapper.toBookingItemDto(nearestFutureBookings.get(item.getId()).get()));
             }
         }
 
