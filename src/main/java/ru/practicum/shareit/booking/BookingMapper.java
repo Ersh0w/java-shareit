@@ -5,7 +5,6 @@ import ru.practicum.shareit.user.UserMapper;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class BookingMapper {
     public static Booking toBooking(BookingDto bookingDto) {
