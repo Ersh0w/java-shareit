@@ -21,7 +21,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public User getUserById(@PathVariable Integer userId) {
+    public User getUserById(@PathVariable long userId) {
         log.info("получен запрос на получение пользователя с id " + userId);
         return userService.getUserById(userId);
     }
@@ -33,13 +33,13 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
-    public User updateUser(@RequestBody User user, @PathVariable Integer userId) {
+    public User updateUser(@RequestBody User user, @PathVariable long userId) {
         log.info("получен запрос на обновление пользователя с id " + userId);
         return userService.updateUser(user, userId);
     }
 
     @DeleteMapping("/{userId}")
-    public void deleteUser(@PathVariable Integer userId) {
+    public void deleteUser(@PathVariable long userId) {
         log.info("получен запрос на удаление пользователя с id " + userId);
         userService.deleteUser(userId);
     }

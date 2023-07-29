@@ -1,21 +1,6 @@
 package ru.practicum.shareit.user;
 
-import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository {
-    List<User> findAll();
-
-    User getUserById(Integer id);
-
-    User save(User user);
-
-    User updateUser(User user, Integer id);
-
-    void deleteUser(Integer id);
-
-    boolean isUserPresentById(Integer id);
-
-    boolean isEmailAlreadyInUse(String email);
-
-    boolean isEmailAlreadyInUseForUpdate(String email, Integer id);
+public interface UserRepository extends JpaRepository<User, Long> {
 }

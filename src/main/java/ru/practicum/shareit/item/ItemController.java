@@ -15,28 +15,29 @@ public class ItemController {
     private final ItemService itemService;
 
     @GetMapping("/{itemId}")
-    public ItemDto getItemById(@PathVariable Integer itemId) {
+    public ItemDto getItemById(@PathVariable long itemId,
+                               @RequestHeader("X-Sharer-User-Id") long userId) {
         log.info("получен запрос на получение вещи с id " + itemId);
-        return itemService.getItemById(itemId);
+        return itemService.getItemById(itemId, userId);
     }
 
     @GetMapping()
-    public List<ItemDto> getAllItemsOfUser(@RequestHeader("X-Sharer-User-Id") Integer userId) {
+    public List<ItemDto> getAllItemsOfUser(@RequestHeader("X-Sharer-User-Id") long userId) {
         log.info("получен запрос на получение всех вещей пользователя с id " + userId);
         return itemService.getAllItemsOfUser(userId);
     }
 
     @PostMapping
     public ItemDto saveNewItem(@RequestBody @Valid ItemDto itemDto,
-                               @RequestHeader("X-Sharer-User-Id") Integer userId) {
+                               @RequestHeader("X-Sharer-User-Id") long userId) {
         log.info("получен запрос на добавление вещи пользователю с id " + userId);
         return itemService.saveNewItem(itemDto, userId);
     }
 
     @PatchMapping("/{itemId}")
     public ItemDto updateItem(@RequestBody ItemDto itemDto,
-                              @PathVariable Integer itemId,
-                              @RequestHeader("X-Sharer-User-Id") Integer userId) {
+                              @PathVariable long itemId,
+                              @RequestHeader("X-Sharer-User-Id") long userId) {
         log.info("получен запрос на обновление вещи с id " + itemId + ", пользователя с id " + userId);
         return itemService.updateItem(itemDto, itemId, userId);
     }
@@ -45,5 +46,13 @@ public class ItemController {
     public List<ItemDto> searchItems(@RequestParam String text) {
         log.info("получен запрос на поиск вещей по запросу: " + text);
         return itemService.searchItems(text);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto saveNewComment(@PathVariable long itemId,
+                                     @RequestBody @Valid Comment comment,
+                                     @RequestHeader("X-Sharer-User-Id") long userId) {
+        log.info("получен запрос на добавление комментария к вещи с id " + itemId + " от пользователя с id " + userId);
+        return itemService.saveNewComment(itemId, comment, userId);
     }
 }
