@@ -2,6 +2,8 @@ package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.*;
@@ -41,28 +43,32 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<SavedBookingDto> getBookingsOfUser(String state, long userId) {
+    public List<SavedBookingDto> getBookingsOfUser(long from, long size, String state, long userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
         List<Booking> bookings;
+        Pageable pageable = PageRequest.of((int) (from / size), (int) size);
+
         switch (state) {
             case "ALL":
-                bookings = bookingRepository.findAllByBookerIdOrderByEndDesc(userId);
+                bookings = bookingRepository.findAllByBookerIdOrderByEndDesc(pageable, userId);
                 break;
             case "CURRENT":
-                bookings = bookingRepository.findCurrentBookingsOfUser(userId, List.of(BookingStatus.APPROVED, BookingStatus.REJECTED), LocalDateTime.now());
+                bookings = bookingRepository.findCurrentBookingsOfUser(pageable, userId,
+                        List.of(BookingStatus.APPROVED, BookingStatus.REJECTED), LocalDateTime.now());
                 break;
             case "PAST":
-                bookings = bookingRepository.findPastBookingsOfUser(userId, LocalDateTime.now());
+                bookings = bookingRepository.findPastBookingsOfUser(pageable, userId,
+                        LocalDateTime.now());
                 break;
             case "FUTURE":
-                bookings = bookingRepository.findFutureBookingsOfUser(userId, LocalDateTime.now());
+                bookings = bookingRepository.findFutureBookingsOfUser(pageable, userId, LocalDateTime.now());
                 break;
             case "WAITING":
-                bookings = bookingRepository.findWaitingOrRejectedBookingsOfUser(userId, BookingStatus.WAITING);
+                bookings = bookingRepository.findWaitingOrRejectedBookingsOfUser(pageable, userId, BookingStatus.WAITING);
                 break;
             case "REJECTED":
-                bookings = bookingRepository.findWaitingOrRejectedBookingsOfUser(userId, BookingStatus.REJECTED);
+                bookings = bookingRepository.findWaitingOrRejectedBookingsOfUser(pageable, userId, BookingStatus.REJECTED);
                 break;
             default:
                 throw new NoSuchStateForBookingSearchException("Unknown state: UNSUPPORTED_STATUS");
@@ -71,7 +77,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<SavedBookingDto> getBookingsOfItemsOwner(String state, long userId) {
+    public List<SavedBookingDto> getBookingsOfItemsOwner(long from, long size, String state, long userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
         List<Booking> bookings;
@@ -79,24 +85,28 @@ public class BookingServiceImpl implements BookingService {
         if (itemsIds.isEmpty()) {
             return null;
         }
+
+        Pageable pageable = PageRequest.of((int) (from / size), (int) size);
+
         switch (state) {
             case "ALL":
-                bookings = bookingRepository.findAllByItemsIds(itemsIds);
+                bookings = bookingRepository.findAllByItemsIds(pageable, itemsIds);
                 break;
             case "CURRENT":
-                bookings = bookingRepository.findCurrentBookingsOfItemsOwner(itemsIds, List.of(BookingStatus.APPROVED, BookingStatus.REJECTED), LocalDateTime.now());
+                bookings = bookingRepository.findCurrentBookingsOfItemsOwner(pageable, itemsIds,
+                        List.of(BookingStatus.APPROVED, BookingStatus.REJECTED), LocalDateTime.now());
                 break;
             case "PAST":
-                bookings = bookingRepository.findPastBookingsOfItemsOwner(itemsIds, LocalDateTime.now());
+                bookings = bookingRepository.findPastBookingsOfItemsOwner(pageable, itemsIds, LocalDateTime.now());
                 break;
             case "FUTURE":
-                bookings = bookingRepository.findFutureBookingsOfItemsOwner(itemsIds, LocalDateTime.now());
+                bookings = bookingRepository.findFutureBookingsOfItemsOwner(pageable, itemsIds, LocalDateTime.now());
                 break;
             case "WAITING":
-                bookings = bookingRepository.findWaitingOrBookingsOfItemsOwner(itemsIds, BookingStatus.WAITING);
+                bookings = bookingRepository.findWaitingOrBookingsOfItemsOwner(pageable, itemsIds, BookingStatus.WAITING);
                 break;
             case "REJECTED":
-                bookings = bookingRepository.findWaitingOrBookingsOfItemsOwner(itemsIds, BookingStatus.REJECTED);
+                bookings = bookingRepository.findWaitingOrBookingsOfItemsOwner(pageable, itemsIds, BookingStatus.REJECTED);
                 break;
             default:
                 throw new NoSuchStateForBookingSearchException("Unknown state: UNSUPPORTED_STATUS");
