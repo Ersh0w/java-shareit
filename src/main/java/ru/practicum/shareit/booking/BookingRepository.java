@@ -51,9 +51,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("SELECT b FROM Booking b JOIN FETCH b.item JOIN FETCH b.booker WHERE b.item.id in (?1) " +
             "AND b.status = 'APPROVED'")
-    List<Booking> findItemsNearestBookings(List<Long> itemsIds);
+    List<Booking> findApprovedItemsBookings(List<Long> itemsIds);
 
     @Query("SELECT b FROM Booking b JOIN FETCH b.item JOIN FETCH b.booker WHERE b.item.id = ?1 AND b.booker.id = ?2 " +
             "AND b.status = 'APPROVED' ORDER BY b.start ASC")
-    List<Booking> findEarliestBookingByItemIdAndBookerId(long itemId, long bookerId, Pageable pageable);
+    List<Booking> findBookingByItemIdAndBookerId(long itemId, long bookerId, Pageable pageable);
 }

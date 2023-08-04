@@ -44,7 +44,6 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> getAllItemsOfUser(long from, long size, long userId) {
-
         List<Item> items = itemRepository.findAllByOwnerId(PageRequest.of((int) (from / size), (int) size), userId);
         List<Long> itemsIds = items.stream()
                 .map(Item::getId)
@@ -113,7 +112,7 @@ public class ItemServiceImpl implements ItemService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
 
-        List<Booking> booking = bookingRepository.findEarliestBookingByItemIdAndBookerId(itemId, userId, PageRequest.of(0, 1));
+        List<Booking> booking = bookingRepository.findBookingByItemIdAndBookerId(itemId, userId, PageRequest.of(0, 1));
         if (booking.isEmpty()) {
             throw new CommentWithoutBookingException("Нельзя оставлять отзыв без завершенного бронирования");
         }
@@ -128,9 +127,10 @@ public class ItemServiceImpl implements ItemService {
         return CommentMapper.toCommentDto(commentRepository.save(comment));
     }
 
-    private List<ItemDto> findAndAttachCommentsToItemsDto(List<ItemDto> items, List<Long> itemsIds) {
+    protected List<ItemDto> findAndAttachCommentsToItemsDto(List<ItemDto> items, List<Long> itemsIds) {
         List<Comment> comments = commentRepository.findAllByItemsIds(itemsIds);
         items.forEach(i -> i.setComments(new ArrayList<>()));
+
         if (!comments.isEmpty()) {
             Map<Long, List<Comment>> commentsByItemId = comments.stream()
                     .collect(Collectors.groupingBy(comment -> comment.getItem().getId()));
@@ -144,8 +144,8 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
-    private List<ItemDto> finaAndAttachNearestBookingsToItemsDto(List<ItemDto> itemsDto, List<Long> itemsIds) {
-        List<Booking> bookings = bookingRepository.findItemsNearestBookings(itemsIds);
+    protected List<ItemDto> finaAndAttachNearestBookingsToItemsDto(List<ItemDto> itemsDto, List<Long> itemsIds) {
+        List<Booking> bookings = bookingRepository.findApprovedItemsBookings(itemsIds);
 
         Map<Long, Optional<Booking>> nearestPastBookings = bookings.stream()
                 .filter(b -> b.getStart().isBefore(LocalDateTime.now()))

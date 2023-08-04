@@ -26,7 +26,7 @@ public class ItemRequestController {
     }
 
     @GetMapping
-    public List<ItemRequestDto> getBookingsOfUser(@RequestHeader("X-Sharer-User-Id") long userId) {
+    public List<ItemRequestDto> getRequestsOfUser(@RequestHeader("X-Sharer-User-Id") long userId) {
         log.info("получен запрос на получение запросов от пользователя с id " + userId);
         return itemRequestService.getRequestsOfUser(userId);
     }

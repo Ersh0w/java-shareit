@@ -1,13 +1,13 @@
-package ru.practicum.shareit;
+package ru.practicum.shareit.item;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Pageable;
-import ru.practicum.shareit.item.Item;
-import ru.practicum.shareit.item.ItemRepository;
+import org.springframework.jdbc.core.JdbcTemplate;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.request.ItemRequestRepository;
 import ru.practicum.shareit.user.User;
@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class ItemRepositoryTest {
+class ItemRepositoryTest {
 
     @Autowired
     ItemRepository itemRepository;
@@ -29,24 +29,37 @@ public class ItemRepositoryTest {
     UserRepository userRepository;
     @Autowired
     ItemRequestRepository itemRequestRepository;
+    @Autowired
+    JdbcTemplate jdbcTemplate;
     Item item;
+    Item item2;
     User user;
+    User user2;
     ItemRequest itemRequest;
+    ItemRequest itemRequest2;
 
     @BeforeAll
     void beforeAll() {
-        user = User.builder().name("Test user").email("test@mail.com").build();
+        user = User.builder().name("user").email("user@mail.com").build();
+        user2 = User.builder().name("user2").email("user2@mail.com").build();
         userRepository.save(user);
+        userRepository.save(user2);
         itemRequest = ItemRequest.builder().description("ItemRequest description").created(LocalDateTime.now())
                 .requestor(user).build();
+        itemRequest2 = ItemRequest.builder().description("ItemRequest2 description").created(LocalDateTime.now())
+                .requestor(user2).build();
         itemRequestRepository.save(itemRequest);
-        item = Item.builder().name("Test Item").description("Test Description").available(true).owner(user)
+        itemRequestRepository.save(itemRequest2);
+        item = Item.builder().name("item").description("item Description").available(true).owner(user)
                 .request(itemRequest).build();
+        item2 = Item.builder().name("item2").description("item2 Description").available(true).owner(user2)
+                .request(itemRequest2).build();
         itemRepository.save(item);
+        itemRepository.save(item2);
     }
 
     @Test
-    void testFindById() {
+    void FindById() {
         Optional<Item> result = itemRepository.findById(item.getId());
 
         assertTrue(result.isPresent());
@@ -58,10 +71,10 @@ public class ItemRepositoryTest {
     }
 
     @Test
-    void testFindAllByOwnerId() {
+    void FindAllByOwnerId() {
         List<Item> result = itemRepository.findAllByOwnerId(Pageable.unpaged(), user.getId());
 
-        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
         assertEquals(item.getId(), result.get(0).getId());
         assertEquals(item.getName(), result.get(0).getName());
         assertEquals(item.getDescription(), result.get(0).getDescription());
@@ -70,10 +83,10 @@ public class ItemRepositoryTest {
     }
 
     @Test
-    void testFindByIdAndOwnerId() {
+    void FindByIdAndOwnerId() {
         Optional<Item> result = itemRepository.findByIdAndOwnerId(item.getId(), user.getId());
 
-        assertFalse(result.isEmpty());
+        assertTrue(result.isPresent());
         assertEquals(item.getId(), result.get().getId());
         assertEquals(item.getName(), result.get().getName());
         assertEquals(item.getDescription(), result.get().getDescription());
@@ -82,22 +95,22 @@ public class ItemRepositoryTest {
     }
 
     @Test
-    void testSearchItems() {
-        List<Item> result = itemRepository.searchItems(Pageable.unpaged(), "Item").toList();
+    void SearchItems() {
+        List<Item> result = itemRepository.searchItems(Pageable.unpaged(), "item2").toList();
 
-        assertFalse(result.isEmpty());
-        assertEquals(item.getId(), result.get(0).getId());
-        assertEquals(item.getName(), result.get(0).getName());
-        assertEquals(item.getDescription(), result.get(0).getDescription());
-        assertEquals(user.getId(), result.get(0).getOwner().getId());
-        assertEquals(itemRequest.getId(), result.get(0).getRequest().getId());
+        assertEquals(1, result.size());
+        assertEquals(item2.getId(), result.get(0).getId());
+        assertEquals(item2.getName(), result.get(0).getName());
+        assertEquals(item2.getDescription(), result.get(0).getDescription());
+        assertEquals(user2.getId(), result.get(0).getOwner().getId());
+        assertEquals(itemRequest2.getId(), result.get(0).getRequest().getId());
     }
 
     @Test
-    void testFindAllByRequestId() {
+    void FindAllByRequestId() {
         List<Item> result = itemRepository.findAllByRequestId(itemRequest.getId());
 
-        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
         assertEquals(item.getId(), result.get(0).getId());
         assertEquals(item.getName(), result.get(0).getName());
         assertEquals(item.getDescription(), result.get(0).getDescription());
@@ -106,15 +119,25 @@ public class ItemRepositoryTest {
     }
 
     @Test
-    void testFindAllByRequestsIds() {
+    void FindAllByRequestsIds() {
         List<Item> result = itemRepository.findAllByRequestsIds(List.of(itemRequest.getId()));
 
-        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
         assertEquals(item.getId(), result.get(0).getId());
         assertEquals(item.getName(), result.get(0).getName());
         assertEquals(item.getDescription(), result.get(0).getDescription());
         assertEquals(user.getId(), result.get(0).getOwner().getId());
         assertEquals(itemRequest.getId(), result.get(0).getRequest().getId());
+    }
+
+    @AfterAll
+    void afterAll() {
+        itemRepository.deleteAll();
+        itemRequestRepository.deleteAll();
+        userRepository.deleteAll();
+        jdbcTemplate.execute("ALTER TABLE users ALTER COLUMN ID RESTART WITH 1;");
+        jdbcTemplate.execute("ALTER TABLE requests ALTER COLUMN ID RESTART WITH 1;");
+        jdbcTemplate.execute("ALTER TABLE items ALTER COLUMN ID RESTART WITH 1;");
     }
 }
 

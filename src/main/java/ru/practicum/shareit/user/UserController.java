@@ -28,7 +28,7 @@ public class UserController {
 
     @PostMapping
     public User saveNewUser(@RequestBody @Valid User user) {
-        log.info("получен запрос на добавления пользователя с email = " + user.getEmail());
+        log.info("получен запрос на добавление пользователя с email = " + user.getEmail());
         return userService.saveUser(user);
     }
 

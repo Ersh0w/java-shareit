@@ -94,7 +94,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         return itemRequestDtoList;
     }
 
-    private List<ItemRequestDto> findAndAttachItemsToRequestDtos(List<ItemRequestDto> itemRequestDtoList) {
+    protected List<ItemRequestDto> findAndAttachItemsToRequestDtos(List<ItemRequestDto> itemRequestDtoList) {
         itemRequestDtoList.forEach(i -> i.setItems(new ArrayList<>()));
         List<Long> itemRequestsIds = itemRequestDtoList.stream()
                 .map(ItemRequestDto::getId)
