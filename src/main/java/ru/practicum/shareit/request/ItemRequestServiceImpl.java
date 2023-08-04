@@ -111,8 +111,8 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
             for (ItemRequestDto itemRequestDto : itemRequestDtoList) {
                 if (requestIdItemsMap.containsKey(itemRequestDto.getId())) {
-                    itemRequestDto.setItems(ItemMapper.
-                            toItemForItemRequestDtoList(requestIdItemsMap.get(itemRequestDto.getId())));
+                    itemRequestDto.setItems(ItemMapper
+                            .toItemForItemRequestDtoList(requestIdItemsMap.get(itemRequestDto.getId())));
                 }
             }
         }

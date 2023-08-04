@@ -59,7 +59,7 @@ class ItemRepositoryTest {
     }
 
     @Test
-    void FindById() {
+    void findById() {
         Optional<Item> result = itemRepository.findById(item.getId());
 
         assertTrue(result.isPresent());
@@ -71,7 +71,7 @@ class ItemRepositoryTest {
     }
 
     @Test
-    void FindAllByOwnerId() {
+    void findAllByOwnerId() {
         List<Item> result = itemRepository.findAllByOwnerId(Pageable.unpaged(), user.getId());
 
         assertEquals(1, result.size());
@@ -83,7 +83,7 @@ class ItemRepositoryTest {
     }
 
     @Test
-    void FindByIdAndOwnerId() {
+    void findByIdAndOwnerId() {
         Optional<Item> result = itemRepository.findByIdAndOwnerId(item.getId(), user.getId());
 
         assertTrue(result.isPresent());
@@ -95,7 +95,7 @@ class ItemRepositoryTest {
     }
 
     @Test
-    void SearchItems() {
+    void searchItems() {
         List<Item> result = itemRepository.searchItems(Pageable.unpaged(), "item2").toList();
 
         assertEquals(1, result.size());
@@ -107,7 +107,7 @@ class ItemRepositoryTest {
     }
 
     @Test
-    void FindAllByRequestId() {
+    void findAllByRequestId() {
         List<Item> result = itemRepository.findAllByRequestId(itemRequest.getId());
 
         assertEquals(1, result.size());
@@ -119,7 +119,7 @@ class ItemRepositoryTest {
     }
 
     @Test
-    void FindAllByRequestsIds() {
+    void findAllByRequestsIds() {
         List<Item> result = itemRepository.findAllByRequestsIds(List.of(itemRequest.getId()));
 
         assertEquals(1, result.size());
