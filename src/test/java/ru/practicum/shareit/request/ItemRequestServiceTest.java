@@ -67,7 +67,7 @@ public class ItemRequestServiceTest {
 
     @Test
     void saveNewRequest_shouldBeSaved() {
-        try (MockedStatic mockStatic = mockStatic(ItemRequestMapper.class)) {
+        try (MockedStatic<ItemRequestMapper> mockStatic = mockStatic(ItemRequestMapper.class)) {
             when(userRepository.findById(userId)).thenReturn(Optional.of(requestor));
             when(itemRequestRepository.save(itemRequest)).thenReturn(itemRequest);
             mockStatic.when(() -> ItemRequestMapper.toItemRequestDto(itemRequest)).thenReturn(itemRequestDtoExpected);
@@ -90,7 +90,7 @@ public class ItemRequestServiceTest {
 
     @Test
     void getRequestsOfUser_shouldBeFound() {
-        try (MockedStatic mockStatic = mockStatic(ItemRequestMapper.class)) {
+        try (MockedStatic<ItemRequestMapper> mockStatic = mockStatic(ItemRequestMapper.class)) {
             when(userRepository.findById(userId)).thenReturn(Optional.of(requestor));
             when(itemRequestRepository.findAllByRequestorId(userId)).thenReturn(List.of(itemRequest));
             mockStatic.when(() -> ItemRequestMapper.toItemRequestDtoList(List.of(itemRequest)))
@@ -121,8 +121,8 @@ public class ItemRequestServiceTest {
 
     @Test
     void getRequestById_shouldBeFound() {
-        try (MockedStatic mockStaticItemRequest = mockStatic(ItemRequestMapper.class);
-             MockedStatic mockStaticItem = mockStatic(ItemMapper.class)) {
+        try (MockedStatic<ItemRequestMapper> mockStaticItemRequest = mockStatic(ItemRequestMapper.class);
+             MockedStatic<ItemMapper> mockStaticItem = mockStatic(ItemMapper.class)) {
             when(userRepository.findById(userId)).thenReturn(Optional.of(requestor));
             when(itemRequestRepository.findById(itemRequest.getId())).thenReturn(Optional.of(itemRequest));
             when(itemRepository.findAllByRequestId(itemRequest.getId())).thenReturn(List.of(item));
@@ -152,7 +152,7 @@ public class ItemRequestServiceTest {
 
     @Test
     void getAllRequests_shouldBeFound() {
-        try (MockedStatic mockStatic = mockStatic(ItemRequestMapper.class)) {
+        try (MockedStatic<ItemRequestMapper> mockStatic = mockStatic(ItemRequestMapper.class)) {
             when(userRepository.findById(userId)).thenReturn(Optional.of(requestor));
             when(itemRequestRepository.findByRequestorIdNot(pageRequest, userId))
                     .thenReturn(new PageImpl<>(List.of(itemRequest)));
@@ -185,7 +185,7 @@ public class ItemRequestServiceTest {
 
     @Test
     void findAndAttachItemsToRequestDtos() {
-        try (MockedStatic mockStatic = mockStatic(ItemMapper.class)) {
+        try (MockedStatic<ItemMapper> mockStatic = mockStatic(ItemMapper.class)) {
             when(itemRepository.findAllByRequestsIds(List.of(itemRequestId))).thenReturn(List.of(item));
             mockStatic.when(() -> ItemMapper.toItemForItemRequestDtoList(List.of(item)))
                     .thenReturn(List.of(itemForItemRequestDtoExpected));

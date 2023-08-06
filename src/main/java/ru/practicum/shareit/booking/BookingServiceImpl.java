@@ -103,10 +103,10 @@ public class BookingServiceImpl implements BookingService {
                 bookings = bookingRepository.findFutureBookingsOfItemsOwner(pageable, itemsIds, LocalDateTime.now());
                 break;
             case "WAITING":
-                bookings = bookingRepository.findWaitingOrBookingsOfItemsOwner(pageable, itemsIds, BookingStatus.WAITING);
+                bookings = bookingRepository.findWaitingOrRejectedBookingsOfItemsOwner(pageable, itemsIds, BookingStatus.WAITING);
                 break;
             case "REJECTED":
-                bookings = bookingRepository.findWaitingOrBookingsOfItemsOwner(pageable, itemsIds, BookingStatus.REJECTED);
+                bookings = bookingRepository.findWaitingOrRejectedBookingsOfItemsOwner(pageable, itemsIds, BookingStatus.REJECTED);
                 break;
             default:
                 throw new NoSuchStateForBookingSearchException("Unknown state: UNSUPPORTED_STATUS");

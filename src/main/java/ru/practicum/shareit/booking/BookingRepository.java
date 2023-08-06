@@ -47,7 +47,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("SELECT b FROM Booking b JOIN FETCH b.item JOIN FETCH b.booker WHERE b.item.id in (?1) AND b.status = ?2 " +
             "ORDER BY b.start DESC")
-    List<Booking> findWaitingOrBookingsOfItemsOwner(Pageable pageable, List<Long> itemsIds, BookingStatus status);
+    List<Booking> findWaitingOrRejectedBookingsOfItemsOwner(Pageable pageable, List<Long> itemsIds, BookingStatus status);
 
     @Query("SELECT b FROM Booking b JOIN FETCH b.item JOIN FETCH b.booker WHERE b.item.id in (?1) " +
             "AND b.status = 'APPROVED'")

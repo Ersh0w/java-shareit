@@ -3,6 +3,8 @@ package ru.practicum.shareit.booking;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -79,9 +81,9 @@ public class BookingServiceTest {
 
     @Test
     void getBookingById_shouldBeFound() {
-        try (MockedStatic mockStaticItem = mockStatic(ItemMapper.class);
-             MockedStatic mockStaticBooking = mockStatic(BookingMapper.class);
-             MockedStatic mockStaticUser = mockStatic(UserMapper.class)) {
+        try (MockedStatic<ItemMapper> mockStaticItem = mockStatic(ItemMapper.class);
+             MockedStatic<BookingMapper> mockStaticBooking = mockStatic(BookingMapper.class);
+             MockedStatic<UserMapper> mockStaticUser = mockStatic(UserMapper.class)) {
             when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
             mockStaticItem.when(() -> ItemMapper.toItemBookingDto(item))
                     .thenReturn(itemBookingDto);
@@ -119,7 +121,7 @@ public class BookingServiceTest {
 
     @Test
     void getBookingsOfUser_shouldBeFound_case_ALL() {
-        try (MockedStatic mockStaticBooking = mockStatic(BookingMapper.class)) {
+        try (MockedStatic<BookingMapper> mockStaticBooking = mockStatic(BookingMapper.class)) {
             when(userRepository.findById(userId)).thenReturn(Optional.of(user));
             when(bookingRepository.findAllByBookerIdOrderByEndDesc(pageRequest, userId)).thenReturn(List.of((booking)));
             mockStaticBooking.when(() -> BookingMapper.toSavedBookingDtoList(List.of(booking)))
@@ -136,7 +138,7 @@ public class BookingServiceTest {
 
     @Test
     void getBookingsOfUser_shouldBeFound_case_CURRENT() {
-        try (MockedStatic mockStaticBooking = mockStatic(BookingMapper.class)) {
+        try (MockedStatic<BookingMapper> mockStaticBooking = mockStatic(BookingMapper.class)) {
             when(userRepository.findById(userId)).thenReturn(Optional.of(user));
             when(bookingRepository.findCurrentBookingsOfUser(any(PageRequest.class), anyLong(), anyList(),
                     any(LocalDateTime.class))).thenReturn(List.of(booking));
@@ -155,7 +157,7 @@ public class BookingServiceTest {
 
     @Test
     void getBookingsOfUser_shouldBeFound_case_PAST() {
-        try (MockedStatic mockStaticBooking = mockStatic(BookingMapper.class)) {
+        try (MockedStatic<BookingMapper> mockStaticBooking = mockStatic(BookingMapper.class)) {
             when(userRepository.findById(userId)).thenReturn(Optional.of(user));
             when(bookingRepository.findPastBookingsOfUser(any(PageRequest.class), anyLong(), any(LocalDateTime.class)))
                     .thenReturn(List.of(booking));
@@ -173,7 +175,7 @@ public class BookingServiceTest {
 
     @Test
     void getBookingsOfUser_shouldBeFound_case_FUTURE() {
-        try (MockedStatic mockStaticBooking = mockStatic(BookingMapper.class)) {
+        try (MockedStatic<BookingMapper> mockStaticBooking = mockStatic(BookingMapper.class)) {
             when(userRepository.findById(userId)).thenReturn(Optional.of(user));
             when(bookingRepository.findFutureBookingsOfUser(any(PageRequest.class), anyLong(), any(LocalDateTime.class)))
                     .thenReturn(List.of(booking));
@@ -189,9 +191,10 @@ public class BookingServiceTest {
         }
     }
 
-    @Test
-    void getBookingsOfUser_shouldBeFound_case_WAITING() {
-        try (MockedStatic mockStaticBooking = mockStatic(BookingMapper.class)) {
+    @ParameterizedTest
+    @ValueSource(strings = {"WAITING", "REJECTED"})
+    void getBookingsOfUser_shouldBeFound_case_WAITING_OR_REJECTED(String status) {
+        try (MockedStatic<BookingMapper> mockStaticBooking = mockStatic(BookingMapper.class)) {
             when(userRepository.findById(userId)).thenReturn(Optional.of(user));
             when(bookingRepository.findWaitingOrRejectedBookingsOfUser(any(PageRequest.class), anyLong(),
                     any(BookingStatus.class)))
@@ -200,27 +203,7 @@ public class BookingServiceTest {
                     .thenReturn(List.of(savedBookingDto));
 
             List<SavedBookingDto> savedBookingDtoListActual = bookingService
-                    .getBookingsOfUser(10, 5, "WAITING", userId);
-
-            assertEquals(List.of(savedBookingDto), savedBookingDtoListActual);
-            verify(userRepository).findById(userId);
-            verify(bookingRepository).findWaitingOrRejectedBookingsOfUser(any(PageRequest.class), anyLong(),
-                    any(BookingStatus.class));
-        }
-    }
-
-    @Test
-    void getBookingsOfUser_shouldBeFound_case_REJECTED() {
-        try (MockedStatic mockStaticBooking = mockStatic(BookingMapper.class)) {
-            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-            when(bookingRepository.findWaitingOrRejectedBookingsOfUser(any(PageRequest.class), anyLong(),
-                    any(BookingStatus.class)))
-                    .thenReturn(List.of(booking));
-            mockStaticBooking.when(() -> BookingMapper.toSavedBookingDtoList(List.of(booking)))
-                    .thenReturn(List.of(savedBookingDto));
-
-            List<SavedBookingDto> savedBookingDtoListActual = bookingService
-                    .getBookingsOfUser(10, 5, "REJECTED", userId);
+                    .getBookingsOfUser(10, 5, status, userId);
 
             assertEquals(List.of(savedBookingDto), savedBookingDtoListActual);
             verify(userRepository).findById(userId);
@@ -241,7 +224,7 @@ public class BookingServiceTest {
 
     @Test
     void getBookingsOfItemsOwner_shouldBeFound_case_ALL() {
-        try (MockedStatic mockStaticBooking = mockStatic(BookingMapper.class)) {
+        try (MockedStatic<BookingMapper> mockStaticBooking = mockStatic(BookingMapper.class)) {
             when(userRepository.findById(userId)).thenReturn(Optional.of(user));
             when(bookingRepository.getItemsIdsOfOwner(userId)).thenReturn(List.of(itemId));
             when(bookingRepository.findAllByItemsIds(pageRequest, List.of(itemId))).thenReturn(List.of((booking)));
@@ -260,7 +243,7 @@ public class BookingServiceTest {
 
     @Test
     void getBookingsOfItemsOwner_shouldBeFound_case_CURRENT() {
-        try (MockedStatic mockStaticBooking = mockStatic(BookingMapper.class)) {
+        try (MockedStatic<BookingMapper> mockStaticBooking = mockStatic(BookingMapper.class)) {
             when(userRepository.findById(userId)).thenReturn(Optional.of(user));
             when(bookingRepository.getItemsIdsOfOwner(userId)).thenReturn(List.of(itemId));
             when(bookingRepository.findCurrentBookingsOfItemsOwner(any(PageRequest.class), anyList(),
@@ -281,7 +264,7 @@ public class BookingServiceTest {
 
     @Test
     void getBookingsOfItemsOwner_shouldBeFound_case_PAST() {
-        try (MockedStatic mockStaticBooking = mockStatic(BookingMapper.class)) {
+        try (MockedStatic<BookingMapper> mockStaticBooking = mockStatic(BookingMapper.class)) {
             when(userRepository.findById(userId)).thenReturn(Optional.of(user));
             when(bookingRepository.getItemsIdsOfOwner(userId)).thenReturn(List.of(itemId));
             when(bookingRepository.findPastBookingsOfItemsOwner(any(PageRequest.class), anyList(),
@@ -302,7 +285,7 @@ public class BookingServiceTest {
 
     @Test
     void getBookingsOfItemsOwner_shouldBeFound_case_FUTURE() {
-        try (MockedStatic mockStaticBooking = mockStatic(BookingMapper.class)) {
+        try (MockedStatic<BookingMapper> mockStaticBooking = mockStatic(BookingMapper.class)) {
             when(userRepository.findById(userId)).thenReturn(Optional.of(user));
             when(bookingRepository.getItemsIdsOfOwner(userId)).thenReturn(List.of(itemId));
             when(bookingRepository.findFutureBookingsOfItemsOwner(any(PageRequest.class), anyList(),
@@ -321,46 +304,25 @@ public class BookingServiceTest {
         }
     }
 
-    @Test
-    void getBookingsOfItemsOwner_shouldBeFound_case_WAITING() {
-        try (MockedStatic mockStaticBooking = mockStatic(BookingMapper.class)) {
+    @ParameterizedTest
+    @ValueSource(strings = {"WAITING", "REJECTED"})
+    void getBookingsOfItemsOwner_shouldBeFound_case_WAITING_or_REJECTED(String state) {
+        try (MockedStatic<BookingMapper> mockStaticBooking = mockStatic(BookingMapper.class)) {
             when(userRepository.findById(userId)).thenReturn(Optional.of(user));
             when(bookingRepository.getItemsIdsOfOwner(userId)).thenReturn(List.of(itemId));
-            when(bookingRepository.findWaitingOrBookingsOfItemsOwner(any(PageRequest.class), anyList(),
+            when(bookingRepository.findWaitingOrRejectedBookingsOfItemsOwner(any(PageRequest.class), anyList(),
                     any(BookingStatus.class))).thenReturn(List.of(booking));
             mockStaticBooking.when(() -> BookingMapper.toSavedBookingDtoList(List.of(booking)))
                     .thenReturn(List.of(savedBookingDto));
 
 
             List<SavedBookingDto> savedBookingDtoListActual = bookingService
-                    .getBookingsOfItemsOwner(10, 5, "WAITING", userId);
+                    .getBookingsOfItemsOwner(10, 5, state, userId);
 
             assertEquals(List.of(savedBookingDto), savedBookingDtoListActual);
             verify(userRepository).findById(userId);
             verify(bookingRepository).getItemsIdsOfOwner(userId);
-            verify(bookingRepository).findWaitingOrBookingsOfItemsOwner(any(PageRequest.class), anyList(),
-                    any(BookingStatus.class));
-        }
-    }
-
-    @Test
-    void getBookingsOfItemsOwner_shouldBeFound_case_REJECTED() {
-        try (MockedStatic mockStaticBooking = mockStatic(BookingMapper.class)) {
-            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-            when(bookingRepository.getItemsIdsOfOwner(userId)).thenReturn(List.of(itemId));
-            when(bookingRepository.findWaitingOrBookingsOfItemsOwner(any(PageRequest.class), anyList(),
-                    any(BookingStatus.class))).thenReturn(List.of(booking));
-            mockStaticBooking.when(() -> BookingMapper.toSavedBookingDtoList(List.of(booking)))
-                    .thenReturn(List.of(savedBookingDto));
-
-
-            List<SavedBookingDto> savedBookingDtoListActual = bookingService
-                    .getBookingsOfItemsOwner(10, 5, "REJECTED", userId);
-
-            assertEquals(List.of(savedBookingDto), savedBookingDtoListActual);
-            verify(userRepository).findById(userId);
-            verify(bookingRepository).getItemsIdsOfOwner(userId);
-            verify(bookingRepository).findWaitingOrBookingsOfItemsOwner(any(PageRequest.class), anyList(),
+            verify(bookingRepository).findWaitingOrRejectedBookingsOfItemsOwner(any(PageRequest.class), anyList(),
                     any(BookingStatus.class));
         }
     }
@@ -379,9 +341,9 @@ public class BookingServiceTest {
 
     @Test
     void saveNewBooking_shouldBeSaved() {
-        try (MockedStatic mockStaticBooking = mockStatic(BookingMapper.class);
-             MockedStatic mockStaticItem = mockStatic(ItemMapper.class);
-             MockedStatic mockStaticUser = mockStatic(UserMapper.class)) {
+        try (MockedStatic<BookingMapper> mockStaticBooking = mockStatic(BookingMapper.class);
+             MockedStatic<ItemMapper> mockStaticItem = mockStatic(ItemMapper.class);
+             MockedStatic<UserMapper> mockStaticUser = mockStatic(UserMapper.class)) {
             mockStaticBooking.when(() -> BookingMapper.toBooking(bookingDto))
                     .thenReturn(booking);
             when(itemRepository.findById(bookingDto.getItemId())).thenReturn(Optional.of(item));
@@ -413,7 +375,7 @@ public class BookingServiceTest {
 
     @Test
     void saveNewBooking_itemNotFound_fail() {
-        try (MockedStatic mockStaticBooking = mockStatic(BookingMapper.class)) {
+        try (MockedStatic<BookingMapper> mockStaticBooking = mockStatic(BookingMapper.class)) {
             mockStaticBooking.when(() -> BookingMapper.toBooking(bookingDto))
                     .thenReturn(booking);
             when(itemRepository.findById(bookingDto.getItemId())).thenReturn(Optional.empty());
@@ -427,7 +389,7 @@ public class BookingServiceTest {
     @Test
     void saveNewBooking_itemNotAvailableForBooking_fail() {
         item.setAvailable(false);
-        try (MockedStatic mockStaticBooking = mockStatic(BookingMapper.class)) {
+        try (MockedStatic<BookingMapper> mockStaticBooking = mockStatic(BookingMapper.class)) {
             mockStaticBooking.when(() -> BookingMapper.toBooking(bookingDto))
                     .thenReturn(booking);
             when(itemRepository.findById(bookingDto.getItemId())).thenReturn(Optional.of(item));
@@ -440,7 +402,7 @@ public class BookingServiceTest {
 
     @Test
     void saveNewBooking_ownerTriesBookFromHimself_fail() {
-        try (MockedStatic mockStaticBooking = mockStatic(BookingMapper.class)) {
+        try (MockedStatic<BookingMapper> mockStaticBooking = mockStatic(BookingMapper.class)) {
             mockStaticBooking.when(() -> BookingMapper.toBooking(bookingDto))
                     .thenReturn(booking);
             when(itemRepository.findById(bookingDto.getItemId())).thenReturn(Optional.of(item));
@@ -453,7 +415,7 @@ public class BookingServiceTest {
 
     @Test
     void saveNewBooking_userNotFound_fail() {
-        try (MockedStatic mockStaticBooking = mockStatic(BookingMapper.class)) {
+        try (MockedStatic<BookingMapper> mockStaticBooking = mockStatic(BookingMapper.class)) {
             mockStaticBooking.when(() -> BookingMapper.toBooking(bookingDto))
                     .thenReturn(booking);
             when(itemRepository.findById(bookingDto.getItemId())).thenReturn(Optional.of(item));
@@ -469,9 +431,9 @@ public class BookingServiceTest {
     @Test
     void updateBooking_shouldBeUpdated() {
         booking.setStatus(BookingStatus.WAITING);
-        try (MockedStatic mockStaticBooking = mockStatic(BookingMapper.class);
-             MockedStatic mockStaticItem = mockStatic(ItemMapper.class);
-             MockedStatic mockStaticUser = mockStatic(UserMapper.class)) {
+        try (MockedStatic<BookingMapper> mockStaticBooking = mockStatic(BookingMapper.class);
+             MockedStatic<ItemMapper> mockStaticItem = mockStatic(ItemMapper.class);
+             MockedStatic<UserMapper> mockStaticUser = mockStatic(UserMapper.class)) {
             when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
             when(bookingRepository.save(booking)).thenReturn(booking);
             mockStaticBooking.when(() -> BookingMapper.toSavedBookingDto(booking))

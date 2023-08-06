@@ -88,11 +88,7 @@ class BookingRepositoryTest {
     void findAllByBookerIdOrderByEndDesc() {
         List<Booking> result = bookingRepository.findAllByBookerIdOrderByEndDesc(Pageable.unpaged(), user.getId());
 
-        assertEquals(4, result.size());
-        assertEquals(booking2.getId(), result.get(0).getId());
-        assertEquals(booking.getId(), result.get(1).getId());
-        assertEquals(booking3.getId(), result.get(2).getId());
-        assertEquals(booking4.getId(), result.get(3).getId());
+        assertBookingDetails_findAllByItemsIds_findAllByBookerIdOrderByEndDesc(result);
     }
 
     @Test
@@ -100,8 +96,7 @@ class BookingRepositoryTest {
         List<Booking> result = bookingRepository.findCurrentBookingsOfUser(Pageable.unpaged(), user.getId(),
                 List.of(BookingStatus.APPROVED), LocalDateTime.now());
 
-        assertEquals(1, result.size());
-        assertEquals(booking.getId(), result.get(0).getId());
+        assertBookingDetails_findCurrentBookingsOfItemsOwner_findCurrentBookingsOfItemsOwner(result);
     }
 
     @Test
@@ -109,9 +104,7 @@ class BookingRepositoryTest {
         List<Booking> result = bookingRepository.findPastBookingsOfUser(Pageable.unpaged(), user.getId(),
                 LocalDateTime.now());
 
-        assertEquals(2, result.size());
-        assertEquals(booking3.getId(), result.get(0).getId());
-        assertEquals(booking4.getId(), result.get(1).getId());
+        assertBookingDetails_findPastBookingsOfItemsOwner_findPastBookingsOfUser(result);
     }
 
     @Test
@@ -119,8 +112,7 @@ class BookingRepositoryTest {
         List<Booking> result = bookingRepository.findFutureBookingsOfUser(Pageable.unpaged(), user.getId(),
                 LocalDateTime.now());
 
-        assertEquals(1, result.size());
-        assertEquals(booking2.getId(), result.get(0).getId());
+        assertBookingDetails_findFutureBookingsOfItemsOwner_findFutureBookingsOfUser(result);
     }
 
     @Test
@@ -128,8 +120,7 @@ class BookingRepositoryTest {
         List<Booking> result = bookingRepository.findWaitingOrRejectedBookingsOfUser(Pageable.unpaged(),
                 user.getId(), BookingStatus.REJECTED);
 
-        assertEquals(1, result.size());
-        assertEquals(booking4.getId(), result.get(0).getId());
+        assertBookingDetails_findWaitingOrRejectedBookingsOfItemsOwner_findWaitingOrRejectedBookingsOfUser(result);
     }
 
     @Test
@@ -145,11 +136,7 @@ class BookingRepositoryTest {
         List<Booking> result = bookingRepository.findAllByItemsIds(Pageable.unpaged(),
                 List.of(item2.getId()));
 
-        assertEquals(4, result.size());
-        assertEquals(booking2.getId(), result.get(0).getId());
-        assertEquals(booking.getId(), result.get(1).getId());
-        assertEquals(booking3.getId(), result.get(2).getId());
-        assertEquals(booking4.getId(), result.get(3).getId());
+        assertBookingDetails_findAllByItemsIds_findAllByBookerIdOrderByEndDesc(result);
     }
 
     @Test
@@ -157,8 +144,7 @@ class BookingRepositoryTest {
         List<Booking> result = bookingRepository.findCurrentBookingsOfItemsOwner(Pageable.unpaged(),
                 List.of(item2.getId()), List.of(BookingStatus.APPROVED), LocalDateTime.now());
 
-        assertEquals(1, result.size());
-        assertEquals(booking.getId(), result.get(0).getId());
+        assertBookingDetails_findCurrentBookingsOfItemsOwner_findCurrentBookingsOfItemsOwner(result);
     }
 
     @Test
@@ -166,9 +152,7 @@ class BookingRepositoryTest {
         List<Booking> result = bookingRepository.findPastBookingsOfItemsOwner(Pageable.unpaged(),
                 List.of(item2.getId()), LocalDateTime.now());
 
-        assertEquals(2, result.size());
-        assertEquals(booking3.getId(), result.get(0).getId());
-        assertEquals(booking4.getId(), result.get(1).getId());
+        assertBookingDetails_findPastBookingsOfItemsOwner_findPastBookingsOfUser(result);
     }
 
     @Test
@@ -176,17 +160,15 @@ class BookingRepositoryTest {
         List<Booking> result = bookingRepository.findFutureBookingsOfItemsOwner(Pageable.unpaged(),
                 List.of(item2.getId()), LocalDateTime.now());
 
-        assertEquals(1, result.size());
-        assertEquals(booking2.getId(), result.get(0).getId());
+        assertBookingDetails_findFutureBookingsOfItemsOwner_findFutureBookingsOfUser(result);
     }
 
     @Test
-    void findWaitingOrBookingsOfItemsOwner() {
-        List<Booking> result = bookingRepository.findWaitingOrBookingsOfItemsOwner(Pageable.unpaged(),
+    void findWaitingOrRejectedBookingsOfItemsOwner() {
+        List<Booking> result = bookingRepository.findWaitingOrRejectedBookingsOfItemsOwner(Pageable.unpaged(),
                 List.of(item2.getId()), BookingStatus.REJECTED);
 
-        assertEquals(1, result.size());
-        assertEquals(booking4.getId(), result.get(0).getId());
+        assertBookingDetails_findWaitingOrRejectedBookingsOfItemsOwner_findWaitingOrRejectedBookingsOfUser(result);
     }
 
     @Test
@@ -218,5 +200,34 @@ class BookingRepositoryTest {
         jdbcTemplate.execute("ALTER TABLE bookings ALTER COLUMN ID RESTART WITH 1;");
         jdbcTemplate.execute("ALTER TABLE users ALTER COLUMN ID RESTART WITH 1;");
         jdbcTemplate.execute("ALTER TABLE items ALTER COLUMN ID RESTART WITH 1;");
+    }
+
+    private void assertBookingDetails_findAllByItemsIds_findAllByBookerIdOrderByEndDesc(List<Booking> result) {
+        assertEquals(4, result.size());
+        assertEquals(booking2.getId(), result.get(0).getId());
+        assertEquals(booking.getId(), result.get(1).getId());
+        assertEquals(booking3.getId(), result.get(2).getId());
+        assertEquals(booking4.getId(), result.get(3).getId());
+    }
+
+    private void assertBookingDetails_findCurrentBookingsOfItemsOwner_findCurrentBookingsOfItemsOwner(List<Booking> result) {
+        assertEquals(1, result.size());
+        assertEquals(booking.getId(), result.get(0).getId());
+    }
+
+    private void assertBookingDetails_findPastBookingsOfItemsOwner_findPastBookingsOfUser(List<Booking> result) {
+        assertEquals(2, result.size());
+        assertEquals(booking3.getId(), result.get(0).getId());
+        assertEquals(booking4.getId(), result.get(1).getId());
+    }
+
+    private void assertBookingDetails_findFutureBookingsOfItemsOwner_findFutureBookingsOfUser(List<Booking> result) {
+        assertEquals(1, result.size());
+        assertEquals(booking2.getId(), result.get(0).getId());
+    }
+
+    private void assertBookingDetails_findWaitingOrRejectedBookingsOfItemsOwner_findWaitingOrRejectedBookingsOfUser(List<Booking> result) {
+        assertEquals(1, result.size());
+        assertEquals(booking4.getId(), result.get(0).getId());
     }
 }

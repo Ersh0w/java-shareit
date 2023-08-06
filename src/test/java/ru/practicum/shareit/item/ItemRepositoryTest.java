@@ -74,12 +74,7 @@ class ItemRepositoryTest {
     void findAllByOwnerId() {
         List<Item> result = itemRepository.findAllByOwnerId(Pageable.unpaged(), user.getId());
 
-        assertEquals(1, result.size());
-        assertEquals(item.getId(), result.get(0).getId());
-        assertEquals(item.getName(), result.get(0).getName());
-        assertEquals(item.getDescription(), result.get(0).getDescription());
-        assertEquals(user.getId(), result.get(0).getOwner().getId());
-        assertEquals(itemRequest.getId(), result.get(0).getRequest().getId());
+        assertItemDetails_findAllByRequestId_findAllByRequestsIds_findAllByOwnerId(result);
     }
 
     @Test
@@ -110,24 +105,14 @@ class ItemRepositoryTest {
     void findAllByRequestId() {
         List<Item> result = itemRepository.findAllByRequestId(itemRequest.getId());
 
-        assertEquals(1, result.size());
-        assertEquals(item.getId(), result.get(0).getId());
-        assertEquals(item.getName(), result.get(0).getName());
-        assertEquals(item.getDescription(), result.get(0).getDescription());
-        assertEquals(user.getId(), result.get(0).getOwner().getId());
-        assertEquals(itemRequest.getId(), result.get(0).getRequest().getId());
+        assertItemDetails_findAllByRequestId_findAllByRequestsIds_findAllByOwnerId(result);
     }
 
     @Test
     void findAllByRequestsIds() {
         List<Item> result = itemRepository.findAllByRequestsIds(List.of(itemRequest.getId()));
 
-        assertEquals(1, result.size());
-        assertEquals(item.getId(), result.get(0).getId());
-        assertEquals(item.getName(), result.get(0).getName());
-        assertEquals(item.getDescription(), result.get(0).getDescription());
-        assertEquals(user.getId(), result.get(0).getOwner().getId());
-        assertEquals(itemRequest.getId(), result.get(0).getRequest().getId());
+        assertItemDetails_findAllByRequestId_findAllByRequestsIds_findAllByOwnerId(result);
     }
 
     @AfterAll
@@ -138,6 +123,15 @@ class ItemRepositoryTest {
         jdbcTemplate.execute("ALTER TABLE users ALTER COLUMN ID RESTART WITH 1;");
         jdbcTemplate.execute("ALTER TABLE requests ALTER COLUMN ID RESTART WITH 1;");
         jdbcTemplate.execute("ALTER TABLE items ALTER COLUMN ID RESTART WITH 1;");
+    }
+
+    private void assertItemDetails_findAllByRequestId_findAllByRequestsIds_findAllByOwnerId(List<Item> result) {
+        assertEquals(1, result.size());
+        assertEquals(item.getId(), result.get(0).getId());
+        assertEquals(item.getName(), result.get(0).getName());
+        assertEquals(item.getDescription(), result.get(0).getDescription());
+        assertEquals(user.getId(), result.get(0).getOwner().getId());
+        assertEquals(itemRequest.getId(), result.get(0).getRequest().getId());
     }
 }
 

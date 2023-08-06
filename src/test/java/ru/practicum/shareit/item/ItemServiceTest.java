@@ -84,7 +84,7 @@ public class ItemServiceTest {
 
     @Test
     void getItemById_shouldBeFound() {
-        try (MockedStatic mockStaticItem = mockStatic(ItemMapper.class)) {
+        try (MockedStatic<ItemMapper> mockStaticItem = mockStatic(ItemMapper.class)) {
             when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
             mockStaticItem.when(() -> ItemMapper.toItemDto(item))
                     .thenReturn(itemDto);
@@ -113,7 +113,7 @@ public class ItemServiceTest {
 
     @Test
     void getAllItemsOfUser_shouldBeFound() {
-        try (MockedStatic mockStaticItem = mockStatic(ItemMapper.class)) {
+        try (MockedStatic<ItemMapper> mockStaticItem = mockStatic(ItemMapper.class)) {
             when(itemRepository.findAllByOwnerId(pageRequest, userId)).thenReturn(List.of(item));
             mockStaticItem.when(() -> ItemMapper.toItemDtoList(List.of(item)))
                     .thenReturn(List.of(itemDto));
@@ -132,7 +132,7 @@ public class ItemServiceTest {
 
     @Test
     void saveNewItem_shouldBeSaved() {
-        try (MockedStatic mockStaticItem = mockStatic(ItemMapper.class)) {
+        try (MockedStatic<ItemMapper> mockStaticItem = mockStatic(ItemMapper.class)) {
             mockStaticItem.when(() -> ItemMapper.toItem(itemDto))
                     .thenReturn(item);
             when(userRepository.findById(userId)).thenReturn(Optional.of(user));
@@ -152,7 +152,7 @@ public class ItemServiceTest {
 
     @Test
     void updateItem_shouldBeUpdated() {
-        try (MockedStatic mockStaticItem = mockStatic(ItemMapper.class)) {
+        try (MockedStatic<ItemMapper> mockStaticItem = mockStatic(ItemMapper.class)) {
             mockStaticItem.when(() -> ItemMapper.toItemDto(item))
                     .thenReturn(itemDto);
             when(itemRepository.findByIdAndOwnerId(itemId, userId)).thenReturn(Optional.of(item));
@@ -177,7 +177,7 @@ public class ItemServiceTest {
 
     @Test
     void searchItems() {
-        try (MockedStatic mockStaticItem = mockStatic(ItemMapper.class)) {
+        try (MockedStatic<ItemMapper> mockStaticItem = mockStatic(ItemMapper.class)) {
             mockStaticItem.when(() -> ItemMapper.toItemDtoList(List.of(item)))
                     .thenReturn(List.of(itemDto));
             when(itemRepository.searchItems(pageRequest, "text")).thenReturn(new PageImpl<>(List.of(item)));
@@ -191,7 +191,7 @@ public class ItemServiceTest {
 
     @Test
     void saveNewComment_shouldBeSaved() {
-        try (MockedStatic mockStaticComment = mockStatic(CommentMapper.class)) {
+        try (MockedStatic<CommentMapper> mockStaticComment = mockStatic(CommentMapper.class)) {
             mockStaticComment.when(() -> CommentMapper.toCommentDto(comment))
                     .thenReturn(commentDto);
             when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
@@ -241,7 +241,7 @@ public class ItemServiceTest {
 
     @Test
     void findAndAttachCommentsToItemsDto_shouldBeAttached() {
-        try (MockedStatic mockStaticComment = mockStatic(CommentMapper.class)) {
+        try (MockedStatic<CommentMapper> mockStaticComment = mockStatic(CommentMapper.class)) {
             mockStaticComment.when(() -> CommentMapper.toCommentDtoList(List.of(comment)))
                     .thenReturn(List.of(commentDto));
             when(commentRepository.findAllByItemsIds(List.of(itemId))).thenReturn(List.of(comment));
@@ -255,7 +255,7 @@ public class ItemServiceTest {
 
     @Test
     void finaAndAttachNearestBookingsToItemsDto_shouldBeAttached() {
-        try (MockedStatic mockStaticBooking = mockStatic(BookingMapper.class)) {
+        try (MockedStatic<BookingMapper> mockStaticBooking = mockStatic(BookingMapper.class)) {
             mockStaticBooking.when(() -> BookingMapper.toBookingItemDto(booking))
                     .thenReturn(bookingItemDto);
             when(bookingRepository.findApprovedItemsBookings(List.of(itemId))).thenReturn(List.of(booking));
