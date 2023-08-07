@@ -25,12 +25,14 @@ public class BookingMapper {
 
     public static List<SavedBookingDto> toSavedBookingDtoList(List<Booking> bookings) {
         List<SavedBookingDto> savedBookingsDto = new ArrayList<>();
+
         for (Booking booking : bookings) {
             SavedBookingDto savedBooking = toSavedBookingDto(booking);
             savedBooking.setBooker(UserMapper.toUserBookingDto(booking.getBooker()));
             savedBooking.setItem(ItemMapper.toItemBookingDto(booking.getItem()));
             savedBookingsDto.add(savedBooking);
         }
+
         return savedBookingsDto;
     }
 

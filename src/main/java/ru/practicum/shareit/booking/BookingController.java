@@ -6,6 +6,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -25,17 +27,21 @@ public class BookingController {
 
     @GetMapping
     public List<SavedBookingDto> getBookingsOfUser(@RequestParam(defaultValue = "ALL") String state,
-                                                   @RequestHeader("X-Sharer-User-Id") long userId) {
+                                                   @RequestHeader("X-Sharer-User-Id") long userId,
+                                                   @RequestParam(defaultValue = "0") @PositiveOrZero long from,
+                                                   @RequestParam(defaultValue = "20") @Positive long size) {
         log.info("получен запрос на получение бронирований со статусом " + state + " пользователя с id " + userId);
-        return bookingService.getBookingsOfUser(state, userId);
+        return bookingService.getBookingsOfUser(from, size, state, userId);
     }
 
     @GetMapping("owner")
     public List<SavedBookingDto> getBookingsOfItemsOwner(@RequestParam(defaultValue = "ALL") String state,
-                                                         @RequestHeader("X-Sharer-User-Id") long userId) {
+                                                         @RequestHeader("X-Sharer-User-Id") long userId,
+                                                         @RequestParam(defaultValue = "0") @PositiveOrZero long from,
+                                                         @RequestParam(defaultValue = "20") @Positive long size) {
         log.info("получен запрос на получение бронирований от хозяина вещей со статусом " + state +
                 " пользователя с id " + userId);
-        return bookingService.getBookingsOfItemsOwner(state, userId);
+        return bookingService.getBookingsOfItemsOwner(from, size, state, userId);
     }
 
     @PostMapping
