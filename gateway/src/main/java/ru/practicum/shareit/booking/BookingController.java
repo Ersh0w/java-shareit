@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.exception.InvalidDateException;
 import ru.practicum.shareit.exception.NoSuchStateForBookingSearchException;
 
 import javax.validation.Valid;
@@ -59,6 +60,10 @@ public class BookingController {
     public ResponseEntity<Object> saveNewBooking(@RequestBody @Valid BookingRequestDto bookingDto,
                                                  @RequestHeader("X-Sharer-User-Id") long userId) {
         log.info("получен запрос на добавление бронирования от пользователя id " + userId);
+
+        if (bookingDto.getEnd().isBefore(bookingDto.getStart()) || bookingDto.getStart().isEqual(bookingDto.getEnd())) {
+            throw new InvalidDateException("Некорректные даты начала/конца бронирования");
+        }
 
         return bookingClient.saveNewBooking(bookingDto, userId);
     }

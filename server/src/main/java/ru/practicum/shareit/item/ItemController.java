@@ -4,8 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -24,8 +22,8 @@ public class ItemController {
 
     @GetMapping()
     public List<ItemDto> getAllItemsOfUser(@RequestHeader("X-Sharer-User-Id") long userId,
-                                           @RequestParam(defaultValue = "0") @PositiveOrZero long from,
-                                           @RequestParam(defaultValue = "20") @Positive long size) {
+                                           @RequestParam(defaultValue = "0") long from,
+                                           @RequestParam(defaultValue = "20") long size) {
         log.info("получен запрос на получение всех вещей пользователя с id " + userId);
         return itemService.getAllItemsOfUser(from, size, userId);
     }
@@ -47,8 +45,8 @@ public class ItemController {
 
     @GetMapping("/search")
     public List<ItemDto> searchItems(@RequestParam String text,
-                                     @RequestParam(defaultValue = "0") @PositiveOrZero long from,
-                                     @RequestParam(defaultValue = "20") @Positive long size) {
+                                     @RequestParam(defaultValue = "0") long from,
+                                     @RequestParam(defaultValue = "20") long size) {
         log.info("получен запрос на поиск вещей по запросу: " + text);
         return itemService.searchItems(from, size, text);
     }

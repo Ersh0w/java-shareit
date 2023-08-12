@@ -367,13 +367,6 @@ public class BookingServiceTest {
     }
 
     @Test
-    void saveNewBooking_invalidDate_fail() {
-        bookingDto.setEnd(LocalDateTime.now().minusDays(10));
-
-        assertThrows(InvalidDateException.class, () -> bookingService.saveNewBooking(bookingDto, user2Id));
-    }
-
-    @Test
     void saveNewBooking_itemNotFound_fail() {
         try (MockedStatic<BookingMapper> mockStaticBooking = mockStatic(BookingMapper.class)) {
             mockStaticBooking.when(() -> BookingMapper.toBooking(bookingDto))

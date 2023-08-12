@@ -110,27 +110,4 @@ public class ItemRequestControllerItTest {
 
         verify(itemRequestService).getAllRequests(0, 20, userId);
     }
-
-    @SneakyThrows
-    @Test
-    void getAllRequests_whenFromIsNegative_fail() {
-        mvc.perform(get(URL + "/all")
-                        .param("from", "-5")
-                        .param("size", "20")
-                        .header("X-Sharer-User-Id", userId))
-                .andDo(print())
-                .andExpect(status().isInternalServerError());
-    }
-
-    @SneakyThrows
-    @Test
-    void getAllRequests_whenSizeIsNegative_fail() {
-        mvc.perform(get(URL + "/all")
-                        .param("from", "0")
-                        .param("size", "-5")
-                        .header("X-Sharer-User-Id", userId))
-                .andDo(print())
-                .andExpect(status().isInternalServerError());
-    }
-
 }

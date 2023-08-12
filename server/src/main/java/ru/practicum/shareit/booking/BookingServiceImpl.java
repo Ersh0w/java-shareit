@@ -117,10 +117,6 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public SavedBookingDto saveNewBooking(BookingDto bookingDto, long userId) {
-        if (bookingDto.getEnd().isBefore(bookingDto.getStart()) || bookingDto.getStart().isEqual(bookingDto.getEnd())) {
-            throw new InvalidDateException("Некорректные даты начала/конца бронирования");
-        }
-
         Booking bookingToSave = BookingMapper.toBooking(bookingDto);
         bookingToSave.setItem(itemRepository.findById(bookingDto.getItemId())
                 .orElseThrow(() -> new ItemNotFoundException("Вещь не найдена")));
