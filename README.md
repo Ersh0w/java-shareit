@@ -1,2 +1,10 @@
-# java-shareit
-Template repository for Shareit project.
+# ShareIt
+Cервис шэринга вещей. Позволяет пользователям рассказывать, какими вещами они
+готовы поделиться, брать вещи в аренду, оставлять комментарии, создавать запросы на вещи которые они бы взяли в аренду.
+
+Стек: REST-сервис с использованием Spring Boot, Maven, Lombok, Docker и взаимодействие с БД
+(PostgreSQL) с помощью JPA.
+
+DB scheme
+
+![DB scheme](server/src/main/resources/db_scheme.png)
